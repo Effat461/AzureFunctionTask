@@ -1,10 +1,12 @@
 ﻿using Azure.Storage.Blobs;
-using AzureFunctionDemo.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.Extensions.Configuration;
+using AzureFunction.Models;
+using Azure.Storage.Blobs.Models;
+using AzureFunctionAPI.Services.Interface;
 
 namespace AzureFunctionAPI.Controllers
 {
@@ -13,42 +15,48 @@ namespace AzureFunctionAPI.Controllers
     public class AzureLogController : ControllerBase
     {
         private readonly IConfiguration _configuration;
-        public AzureLogController(IConfiguration configuration)
+        private readonly IAzureFunctionService _azureFunctionService;
+        public AzureLogController(IConfiguration configuration, IAzureFunctionService azureFunctionService)
         {
             _configuration = configuration;
+            _azureFunctionService = azureFunctionService;
         }
-        [Route("/GetMessageLogsForSpecificTimeStamp")]
+     
+        [Route("/GetMessageLogs")]
         [HttpGet]
-        public async Task<MessageEntity> GetMessageLogsForSpecificTimeStamp(string partitionKey, DateTimeOffset from, DateTimeOffset to)
+        public async Task<MessageEntity> GetMessageLogs(string partitionKey, DateTimeOffset from, DateTimeOffset to)
          {
-            var connectString =_configuration.GetValue<string>("AzureWebJobsStorage");
-            var account = CloudStorageAccount.Parse(connectString);
-            var client = account.CreateCloudTableClient();
-            var table = client.GetTableReference("tblsuccessfaliuremessagelog");
+            //var connectString =_configuration.GetValue<string>("AzureWebJobsStorage");
+            //var account = CloudStorageAccount.Parse(connectString);
+            //var client = account.CreateCloudTableClient();
+            //var table = client.GetTableReference("tblsuccessfaliuremessagelog");
+            ////string finalFilter = TableQuery.CombineFilters(
+            ////                        TableQuery.CombineFilters(partitionKey, TableOperators.And, "logdatetime ge datetime'"+from.ToString("yyyy-MM-dd") +"'"), TableOperators.And, "logdatetime le datetime'"+to.ToString("yyyy-MM-dd") +"'");
             //string finalFilter = TableQuery.CombineFilters(
-            //                        TableQuery.CombineFilters(partitionKey, TableOperators.And, "logdatetime ge datetime'"+from.ToString("yyyy-MM-dd") +"'"), TableOperators.And, "logdatetime le datetime'"+to.ToString("yyyy-MM-dd") +"'");
-            string finalFilter = TableQuery.CombineFilters(
-                        TableQuery.CombineFilters(partitionKey, TableOperators.And, from.ToString()), TableOperators.And, to.ToString());
-            TableOperation tableOperation = TableOperation.Retrieve<MessageEntity>(partitionKey,finalFilter);
-            TableResult tableResult = await table.ExecuteAsync(tableOperation);
-            return tableResult.Result as MessageEntity;
+            //            TableQuery.CombineFilters(partitionKey, TableOperators.And, from.ToString()), TableOperators.And, to.ToString());
+            //TableOperation tableOperation = TableOperation.Retrieve<MessageEntity>(partitionKey,finalFilter);
+            //TableResult tableResult = await table.ExecuteAsync(tableOperation);
+            return await _azureFunctionService.GetMessageLogs(partitionKey,from,to);
 
         }
-        [Route("/GetAllLogsForSpecificEntry")]
+        [Route("/GetAllLogsByName")]
         [HttpGet]
-        public async Task<string> GetAllLogsForSpecificEntry(string name)
+        public async Task<IEnumerable<BlobItem>> GetAllLogsByName(string name)
         {
-            var connectString = _configuration.GetValue<string>("AzureWebJobsStorage");
-            BlobServiceClient blobServiceClient = new BlobServiceClient(connectString);
-            string containerName = _configuration.GetValue<string>("ContainerName");
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-            var blobs = containerClient.GetBlobs().Where(x => x.Name == name);
-
-            foreach (var item in blobs)
+            try
             {
-                Console.WriteLine(item.Name);
+              
+                return await _azureFunctionService.GetAllLogsByName(name);
+
             }
-            return "OK";
-        }   
+            catch (Exception)
+            {
+
+                throw;
+            }
+            
+        }
+        
+
     }
 }

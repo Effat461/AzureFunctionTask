@@ -9,7 +9,7 @@ namespace AzureFunction.Models
 {
     public class MessageEntity : TableEntity
     {
-        //public MessageEntity() { }
+        public MessageEntity() { }
         public MessageEntity(string message, string messageType)
         {
             this.PartitionKey = message; this.RowKey = messageType;
