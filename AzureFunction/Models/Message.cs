@@ -16,5 +16,6 @@ namespace AzureFunction.Models
         }
         public string message { get; set; }
         public string messageType { get; set; }
+        public string CreatedDate { get; set; }
     }
 }

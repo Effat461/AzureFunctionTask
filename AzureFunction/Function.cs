@@ -28,13 +28,7 @@ namespace AzureFunction
                 var request = GetURL();
                 var response = await client.SendAsync(request);
                 response.EnsureSuccessStatusCode();
-                //var response = GetAPIResponse();
                 var resp = await response.Content.ReadAsStringAsync();
-                //string connectString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
-                //var storageAccount = CloudStorageAccount.Parse(connectString);
-                //var blobClient = storageAccount.CreateCloudBlobClient();
-                //string containerName = Environment.GetEnvironmentVariable("ContainerName");
-                //string logFileName = "payloadlogFile" + DateTime.Now.ToString("yyyyMMddHHmmss");
                 await WriteLog(GetContainerName(), SetFileName(), GetBlobClient(), resp);
                 await InsertMessageToAzureTable(Guid.NewGuid().ToString(), "success");
                 return resp;
@@ -68,10 +62,6 @@ namespace AzureFunction
         {
             try
             {
-                //var connectString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
-                //var account = CloudStorageAccount.Parse(connectString);
-                //var client = account.CreateCloudTableClient();
-                //var table = client.GetTableReference("tblsuccessfaliuremessagelog");
                 var table = GetTableClient();
                 CreateTableLog(guid,message,table);
 
@@ -89,6 +79,7 @@ namespace AzureFunction
             {
                 PartitionKey = guid,
                 RowKey = message,
+                CreatedDate = DateTime.Now.ToString("MM/dd/yyyy")
             };
             TableOperation insertOperation = TableOperation.Insert(messageEntity);
             await table.ExecuteAsync(insertOperation);

@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AzureFunctionDemo\AzureFunction.Service\AzureFunction.Service.csproj" />
     <ProjectReference Include="..\AzureFunction\AzureFunction.csproj" />
   </ItemGroup>
 

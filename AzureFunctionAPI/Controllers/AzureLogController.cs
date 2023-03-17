@@ -6,7 +6,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.Extensions.Configuration;
 using AzureFunction.Models;
 using Azure.Storage.Blobs.Models;
-using AzureFunctionAPI.Services.Interface;
+using AzureFunction.Service.Services.Interface;
 
 namespace AzureFunctionAPI.Controllers
 {
@@ -24,29 +24,22 @@ namespace AzureFunctionAPI.Controllers
      
         [Route("/GetMessageLogs")]
         [HttpGet]
-        public async Task<MessageEntity> GetMessageLogs(string partitionKey, DateTimeOffset from, DateTimeOffset to)
-         {
-            //var connectString =_configuration.GetValue<string>("AzureWebJobsStorage");
-            //var account = CloudStorageAccount.Parse(connectString);
-            //var client = account.CreateCloudTableClient();
-            //var table = client.GetTableReference("tblsuccessfaliuremessagelog");
-            ////string finalFilter = TableQuery.CombineFilters(
-            ////                        TableQuery.CombineFilters(partitionKey, TableOperators.And, "logdatetime ge datetime'"+from.ToString("yyyy-MM-dd") +"'"), TableOperators.And, "logdatetime le datetime'"+to.ToString("yyyy-MM-dd") +"'");
-            //string finalFilter = TableQuery.CombineFilters(
-            //            TableQuery.CombineFilters(partitionKey, TableOperators.And, from.ToString()), TableOperators.And, to.ToString());
-            //TableOperation tableOperation = TableOperation.Retrieve<MessageEntity>(partitionKey,finalFilter);
-            //TableResult tableResult = await table.ExecuteAsync(tableOperation);
-            return await _azureFunctionService.GetMessageLogs(partitionKey,from,to);
+        public async Task<MessageEntity> GetMessageLogs(string partitionKey, DateTime from, DateTime to)
+        {
 
+            return await _azureFunctionService.GetMessageLogs(partitionKey,from,to);
         }
-        [Route("/GetAllLogsByName")]
+        [Route("/GetAllLogsByBlobItemName")]
         [HttpGet]
-        public async Task<IEnumerable<BlobItem>> GetAllLogsByName(string name)
+        public async Task<IEnumerable<BlobItem>> GetAllLogsByBlobItemName(string name)
         {
             try
             {
-              
-                return await _azureFunctionService.GetAllLogsByName(name);
+                if (!string.IsNullOrEmpty(name)) {
+                    return await _azureFunctionService.GetAllLogsByBlobItemName(name);
+                }
+                return new List<BlobItem>();
+
 
             }
             catch (Exception)
